@@ -28,10 +28,10 @@ module DeviseTokenAuth
       set_token_on_resource
       create_auth_params
 
-      if resource_class.devise_modules.include?(:confirmable)
-        # don't send confirmation email!!!
-        @resource.skip_confirmation!
-      end
+      # if resource_class.devise_modules.include?(:confirmable)
+      #   # don't send confirmation email!!!
+      #   @resource.skip_confirmation!
+      # end
 
       sign_in(:user, @resource, store: false, bypass: false)
 
@@ -230,10 +230,12 @@ module DeviseTokenAuth
 
     def get_resource_from_auth_hash
       # find or create user by provider and provider uid
-      @resource = resource_class.where({
-        uid:      auth_hash['uid'],
-        provider: auth_hash['provider']
-      }).first_or_initialize
+      # @resource = resource_class.where({
+      #   uid:      auth_hash['uid'],
+      #   provider: auth_hash['provider']
+      # }).first_or_initialize
+
+      @resource = resource_class.find_for_oauth(auth_hash, current_user)
 
       if @resource.new_record?
         @oauth_registration = true
@@ -241,7 +243,7 @@ module DeviseTokenAuth
       end
 
       # sync user info with provider, update/generate auth token
-      assign_provider_attrs(@resource, auth_hash)
+      # assign_provider_attrs(@resource, auth_hash)
 
       # assign any additional (whitelisted) attributes
       extra_params = whitelisted_params

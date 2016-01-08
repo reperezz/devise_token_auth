@@ -25,6 +25,7 @@ module DeviseTokenAuth::Concerns::SetUserByToken
 
     # parse header for values necessary for authentication
     uid        = request.headers['uid'] || params['uid']
+    provider   = request.headers['provider'] || params['provider']
     @token     = request.headers['access-token'] || params['access-token']
     @client_id = request.headers['client'] || params['client']
 
@@ -53,7 +54,7 @@ module DeviseTokenAuth::Concerns::SetUserByToken
     return false unless @token
 
     # mitigate timing attacks by finding by uid instead of auth token
-    user = uid && rc.find_by_uid(uid)
+    user = find_user_by(uid, provider)
 
     if user && user.valid_token?(@token, @client_id)
       sign_in(:user, user, store: false, bypass: true)
@@ -123,6 +124,15 @@ module DeviseTokenAuth::Concerns::SetUserByToken
 
   private
 
+  def find_user_by(uid, provider)
+    if uid
+      if provider.nil? || provider == 'email'
+        User.find_by(email: uid)
+      else
+        Identity.where(provider: provider, uid: uid).first.try(:user)
+      end
+    end
+  end
 
   def is_batch_request?(user, client_id)
     not params[:unbatch] and
