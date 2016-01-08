@@ -34,11 +34,11 @@ module DeviseTokenAuth
         @email = resource_params[:email]
       end
 
-      q = "uid = ? AND provider='email'"
+      q = "email = ?"
 
       # fix for mysql default case insensitivity
       if ActiveRecord::Base.connection.adapter_name.downcase.starts_with? 'mysql'
-        q = "BINARY uid = ? AND provider='email'"
+        q = "BINARY email = ?"
       end
 
       @resource = resource_class.where(q, @email).first
@@ -50,7 +50,6 @@ module DeviseTokenAuth
         yield if block_given?
         @resource.send_reset_password_instructions({
           email: @email,
-          provider: 'email',
           redirect_url: @redirect_url,
           client_config: params[:config_name]
         })
@@ -114,9 +113,9 @@ module DeviseTokenAuth
       end
 
       # make sure account doesn't use oauth2 provider
-      unless @resource.provider == 'email'
-        return render_update_error_password_not_required
-      end
+      # unless @resource.provider == 'email'
+      #   return render_update_error_password_not_required
+      # end
 
       # ensure that password params were sent
       unless password_resource_params[:password] and password_resource_params[:password_confirmation]
@@ -193,7 +192,7 @@ module DeviseTokenAuth
     def render_update_error_password_not_required
       render json: {
         success: false,
-        errors: [I18n.t("devise_token_auth.passwords.password_not_required", provider: @resource.provider.humanize)]
+        errors: [I18n.t("devise_token_auth.passwords.password_not_required", provider: 'Email')]
       }, status: 422
     end
 
