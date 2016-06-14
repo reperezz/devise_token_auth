@@ -88,6 +88,18 @@ module DeviseTokenAuth::Concerns::User
 
       token
     end
+
+    def self.tokens_in_db?
+      tokens_in_db || !defined?($redis)
+    end
+
+    unless self.tokens_in_db?
+      # Tokens in Redis
+      def tokens
+        @tokens_in_redis ||= DeviseTokenAuth::RedisTokens.new(self.id)
+      end
+    end
+
   end
 
   module ClassMethods

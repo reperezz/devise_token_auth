@@ -191,6 +191,11 @@ Devise.setup do |config|
   # The default HTTP method used to sign out a resource. Default is :delete.
   config.sign_out_via = :delete
 
+  # Tokens in DB or tokens in Redis. By default in database
+  # If tokens_in_db is false then $redis must exist and be something like the following:
+  # Example: $redis = Redis::Namespace.new('myApp', redis: Redis.new(driver: :hiredis))
+  config.tokens_in_db = true
+
   # don't serialize tokens
   Devise::Models::Authenticatable::BLACKLIST_FOR_SERIALIZATION << :tokens
 end
