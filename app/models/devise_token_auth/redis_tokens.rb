@@ -25,7 +25,9 @@ module DeviseTokenAuth
       hash = root_hash
       hash.delete_if(*args, &block)
       keys_to_delete = (keys - hash.keys).map{|key| reference(key)}
-      $redis.del(*keys_to_delete)
+      $redis.pipelined do
+        keys_to_delete.each{|key| $redis.del(key)}
+      end
     end
 
     def root_hash

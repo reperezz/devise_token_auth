@@ -90,7 +90,7 @@ module DeviseTokenAuth::Concerns::User
     end
 
     def self.tokens_in_db?
-      tokens_in_db || !defined?($redis)
+      Devise.tokens_in_db || !defined?($redis)
     end
 
     unless self.tokens_in_db?
