@@ -133,20 +133,24 @@ module DeviseTokenAuth::Concerns::User
 
 
   def token_is_current?(token, client_id)
-    # ghetto HashWithIndifferentAccess
-    expiry     = self.tokens[client_id]['expiry'] || self.tokens[client_id][:expiry]
-    token_hash = self.tokens[client_id]['token'] || self.tokens[client_id][:token]
+    if self.tokens[client_id]
+      # ghetto HashWithIndifferentAccess
+      expiry     = self.tokens[client_id]['expiry'] || self.tokens[client_id][:expiry]
+      token_hash = self.tokens[client_id]['token'] || self.tokens[client_id][:token]
 
-    return true if (
-      # ensure that expiry and token are set
-      expiry and token and
+      return true if (
+        # ensure that expiry and token are set
+        expiry and token and
 
-      # ensure that the token has not yet expired
-      DateTime.strptime(expiry.to_s, '%s') > Time.now and
+        # ensure that the token has not yet expired
+        DateTime.strptime(expiry.to_s, '%s') > Time.now and
 
-      # ensure that the token is valid
-      DeviseTokenAuth::Concerns::User.tokens_match?(token_hash, token)
-    )
+        # ensure that the token is valid
+        DeviseTokenAuth::Concerns::User.tokens_match?(token_hash, token)
+      )
+    else
+      return false
+    end
   end
 
 
@@ -206,7 +210,7 @@ module DeviseTokenAuth::Concerns::User
 
     # client may use expiry to prevent validation request if expired
     # must be cast as string or headers will break
-    expiry = self.tokens[client_id]['expiry'] || self.tokens[client_id][:expiry]
+    expiry = self.tokens[client_id] ? self.tokens[client_id]['expiry'] || self.tokens[client_id][:expiry] : 1
 
     return {
       "access-token" => token,
